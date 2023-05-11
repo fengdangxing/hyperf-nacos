@@ -1,8 +1,7 @@
 <?php
 
-namespace Fengdangxing\HyperfNacos;
+namespace Hyperf\HyperfNacos;
 
-use App\Log\Log;
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Nacos\Application;
@@ -92,9 +91,9 @@ class OperateNacos
             ]);
             $this->delCache($serviceName);
             if ($response->getStatusCode() === 200) {
-                Log::debug(sprintf('删除服务-Instance %s:%d deleted successfully!', $ip, $port));
+                $this->logger->debug(sprintf('删除服务-Instance %s:%d deleted successfully!', $ip, $port));
             } else {
-                Log::error(sprintf('删除服务-Instance %s:%d deleted failed!', $ip, $port));
+                $this->logger->error(sprintf('删除服务-Instance %s:%d deleted failed!', $ip, $port));
             }
         }
     }

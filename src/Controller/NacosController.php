@@ -10,9 +10,9 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-namespace Fengdangxing\HyperfNacos\Controller;
+namespace Hyperf\HyperfNacos\Controller;
 
-use Fengdangxing\HyperfNacos\OperateNacos;
+use Hyperf\HyperfNacos\OperateNacos;
 use Psr\Container\ContainerInterface;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\AutoController;
