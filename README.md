@@ -34,7 +34,9 @@ return [
 ```
 #WEB_PATH根目录 容器配置摧毁前运行脚本  http转端口 请一定开启http—server服务
 ```bash
-sh WEB_PATH+/vendor/fengdangxing/hyperf-nacos/del_nacos_service.sh 9501
+sh WEB_PATH/vendor/fengdangxing/hyperf-nacos/del_nacos_service.sh 9501
+或者把脚本复制到根目录
+sh WEB_PATH/del_nacos_service.sh 9501
 ```
 
 
