@@ -2,7 +2,19 @@
 用于容器平滑下线操作
 
 #下载包后配置
+
 ```php
+#config/app.php
+return [
+    //增加该配置
+    'fengdangxing' => [
+            'nacos' => [
+                'namespaceId' => 'ffffkk',
+                'cache' => false,
+                'cacheKey' => 'key:rpc_nodes_%s',
+            ]
+        ]
+];
 #配置路径 config/annotations.php 没有改文件新建
 return [
     'scan' => [

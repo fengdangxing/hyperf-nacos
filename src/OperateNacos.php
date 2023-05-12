@@ -3,12 +3,12 @@
 namespace Fengdangxing\HyperfNacos;
 
 use Hyperf\Contract\ConfigInterface;
-use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Nacos\Application;
 use Hyperf\ServiceGovernance\IPReaderInterface;
 use Hyperf\Utils\Codec\Json;
 use Psr\Container\ContainerInterface;
 use Hyperf\Di\Annotation\Inject;
+use Fengdangxing\HyperfRedis\RedisHelper;
 
 class OperateNacos
 {
@@ -19,16 +19,24 @@ class OperateNacos
     public $container;
 
     /**
-     * @var StdoutLoggerInterface
-     */
-    protected $logger;
-
-    /**
      * @var IPReaderInterface
      */
     protected $ipReader;
 
-    const CACHE_RPC_NODES = 'cms3:rpc_nodes_%s';
+    public $cacheRedisKey = 'key:rpc_nodes_%s';
+    public $namespaceId;
+    public $isCache = false;
+
+    public function __construct()
+    {
+        $config = $this->container->get(ConfigInterface::class);
+        $this->namespaceId = $config->get("app.fengdangxing.nacos.namespaceId") ? $config->get("app.fengdangxing.nacos.namespaceId") : env('NAMESPACE_PREFIX', '');
+        if (empty($this->namespaceId)) {
+            throw new \Exception("namespaceId empty");
+        }
+        $this->isCache = $config->get("app.fengdangxing.nacos.cache") ? $config->get("app.fengdangxing.nacos.cache") : false;
+        $this->cacheRedisKey = $config->get("app.fengdangxing.nacos.cacheKey") ? $config->get("app.fengdangxing.nacos.cacheKey") : $this->cacheRedisKey;
+    }
 
     public function getOneService()
     {
@@ -43,9 +51,14 @@ class OperateNacos
 
         //设置临时心跳为3600 为1小时
         $config->set('services.drivers.nacos.heartbeat', 3600);
-
+        sleep(5);
         $hostListPort = $this->getNodeServiceHostPort($client);
         $this->delServiceName($client, $hostListPort);
+    }
+
+    public function setCache()
+    {
+
     }
 
     private function getNodeServiceHostPort(Application $client): array
@@ -63,7 +76,7 @@ class OperateNacos
             foreach ($hosts as $hostInfo) {
                 $ip = $hostInfo['ip'];
                 $port = $hostInfo['port'];
-                $hostListPort[$ip][] = $serviceName;
+                $hostListPort[$ip][] = array($serviceName, $port);
             }
         }
         return $hostListPort;
@@ -78,29 +91,25 @@ class OperateNacos
         $groupName = '';
         $cluster = '';
         $ephemeral = 'true';
-        $namespaceId = env('NAMESPACE_PREFIX', '');
-
-        //$port = (int)env('JSON_PORT');
         $ipPort = $ip;
-        $serviceNames = $hostListPort[$ipPort];
-        foreach ($serviceNames as $serviceName) {
-            $response = $client->instance->delete($serviceName, $groupName, $ip, $port, [
+        $services = $hostListPort[$ip];
+        foreach ($services as $key => $service) {
+            $response = $client->instance->delete((string)$service[0], $groupName, $ip, (int)$service[1], [
                 'clusterName' => $cluster,
-                'namespaceId' => $namespaceId,
+                'namespaceId' => $this->namespaceId,
                 'ephemeral' => $ephemeral,
             ]);
-            $this->delCache($serviceName);
-            if ($response->getStatusCode() === 200) {
-                $this->logger->debug(sprintf('删除服务-Instance %s:%d deleted successfully!', $ip, $port));
-            } else {
-                $this->logger->error(sprintf('删除服务-Instance %s:%d deleted failed!', $ip, $port));
-            }
+            $this->delCache($service[0]);
         }
     }
 
+
     private function delCache($serviceName)
     {
-        $key = sprintf(self::CACHE_RPC_NODES, md5($serviceName . env('NAMESPACE_PREFIX')));
-        RedisHelper::init()->del($key);
+        if ($this->isCache) {
+            $key = sprintf($this->cacheRedisKey, md5((string)$serviceName . $this->namespaceId));
+            RedisHelper::init()->del($key);
+        }
+        return true;
     }
 }
