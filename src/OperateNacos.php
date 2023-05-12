@@ -63,7 +63,7 @@ class OperateNacos
             foreach ($hosts as $hostInfo) {
                 $ip = $hostInfo['ip'];
                 $port = $hostInfo['port'];
-                $hostListPort[$ip . ':' . $port][] = $serviceName;
+                $hostListPort[$ip][] = $serviceName;
             }
         }
         return $hostListPort;
@@ -80,8 +80,8 @@ class OperateNacos
         $ephemeral = 'true';
         $namespaceId = env('NAMESPACE_PREFIX', '');
 
-        $port = (int)env('JSON_PORT');
-        $ipPort = $ip . ':' . $port;
+        //$port = (int)env('JSON_PORT');
+        $ipPort = $ip;
         $serviceNames = $hostListPort[$ipPort];
         foreach ($serviceNames as $serviceName) {
             $response = $client->instance->delete($serviceName, $groupName, $ip, $port, [
@@ -97,7 +97,6 @@ class OperateNacos
             }
         }
     }
-
 
     private function delCache($serviceName)
     {

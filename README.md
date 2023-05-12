@@ -3,7 +3,7 @@
 
 #下载包后配置
 ```php
-#config/annotations.php
+#配置路径 config/annotations.php 没有改文件新建
 return [
     'scan' => [
         'paths' => [
