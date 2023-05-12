@@ -32,7 +32,7 @@ return [
     ],
 ];
 ```
-#WEB_PATH网站目前 容器配置摧毁前运行脚本  http转端口 请一定开启http—server服务
+#WEB_PATH根目录 容器配置摧毁前运行脚本  http转端口 请一定开启http—server服务
 ```bash
 sh WEB_PATH+/vendor/fengdangxing/hyperf-nacos/del_nacos_service.sh 9501
 ```

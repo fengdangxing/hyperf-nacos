@@ -22,7 +22,7 @@
   ],
   "require": {
     "php": ">=5.6.0",
-    "hyperf/service-governance": "^v2.2.31.1",
+    "hyperf/service-governance": "~1.1.0",
     "hyperf/di": "~2.2.0",
     "fengdangxing/hyperf-helper-redis": "dev-master"
   },

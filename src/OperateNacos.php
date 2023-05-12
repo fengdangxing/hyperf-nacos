@@ -38,9 +38,15 @@ class OperateNacos
         $this->cacheRedisKey = $config->get("app.fengdangxing.nacos.cacheKey") ? $config->get("app.fengdangxing.nacos.cacheKey") : $this->cacheRedisKey;
     }
 
-    public function getOneService()
+    public function getOneNodeService($serviceName)
     {
-
+        $client = $this->container->get(Application::class);
+        $ip = $this->ipReader->read();
+        if ($this->isCache) {
+            $key = sprintf($this->cacheRedisKey, md5((string)$serviceName . $this->namespaceId));
+            $rpcNodes = RedisHelper::init()->get($key);
+        }
+        return 'http://' . $ip . ':' . $this->rpcPort . '/' . $serviceName . '/';
     }
 
     public function delServiceNacos()
@@ -102,7 +108,6 @@ class OperateNacos
             $this->delCache($service[0]);
         }
     }
-
 
     private function delCache($serviceName)
     {
