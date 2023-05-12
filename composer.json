@@ -24,7 +24,7 @@
     "php": ">=5.6.0",
     "hyperf/service-governance": "~1.1.0",
     "hyperf/di": "~2.2.0",
-    "fengdangxing/hyperf-helper-redis": "dev-master"
+    "fengdangxing/hyperf-helper-redis": "~1.0.0"
   },
   "repositories": [
     {
