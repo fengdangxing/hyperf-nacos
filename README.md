@@ -9,9 +9,9 @@ return [
     //增加该配置
     'fengdangxing' => [
             'nacos' => [
-                'namespaceId' => 'ffffkk',
-                'cache' => false,
-                'cacheKey' => 'key:rpc_nodes_%s',
+                'namespaceId' => 'ffffkk',//nacos 命名空间
+                'cache' => false,//是否启用redis 缓存节点
+                'cacheKey' => 'key:rpc_nodes_%s',//用redis 缓存节点 key值 
             ]
         ]
 ];
