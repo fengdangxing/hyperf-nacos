@@ -1,6 +1,6 @@
 <?php
 
-namespace Hyperf\HyperfNacos;
+namespace Fengdangxing\HyperfNacos;
 
 use Hyperf\Contract\ConfigInterface;
 use Hyperf\Contract\StdoutLoggerInterface;

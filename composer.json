@@ -1,5 +1,5 @@
 {
-  "name": "hyperf/hyperf-nacos",
+  "name": "fengdangxing/hyperf-nacos",
   "description": "hyperf-nacos用于容器平滑下线操作",
   "keywords": [
     "hyperf-nacos",
@@ -33,7 +33,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "Hyperf\\HyperfNacos\\": "src/"
+      "Fengdangxing\\HyperfNacos\\": "src/"
     }
   }
 }

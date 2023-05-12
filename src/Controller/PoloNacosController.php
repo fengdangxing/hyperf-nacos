@@ -10,9 +10,9 @@ declare(strict_types=1);
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
 
-namespace Hyperf\HyperfNacos\Controller;
+namespace Fengdangxing\HyperfNacos\Controller;
 
-use Hyperf\HyperfNacos\OperateNacos;
+use Fengdangxing\HyperfNacos\OperateNacos;
 use Psr\Container\ContainerInterface;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\AutoController;
@@ -20,7 +20,7 @@ use Hyperf\HttpServer\Annotation\AutoController;
 /**
  * @AutoController()
  */
-class NacosController
+class PoloNacosController
 {
     /**
      * @Inject
@@ -30,7 +30,6 @@ class NacosController
 
     public function del()
     {
-        echo '执行到了';
         $nacos = $this->container->get(OperateNacos::class);
         $nacos->delServiceNacos();
     }
