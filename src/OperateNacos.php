@@ -36,6 +36,7 @@ class OperateNacos
     public $cacheRedisKey = 'key:rpc_nodes_%s';
     public $namespaceId;
     public $isCache = false;
+    public $periodSeconds = 60;
 
     public function __construct()
     {
@@ -43,12 +44,13 @@ class OperateNacos
         $this->client = $this->container->get(Application::class);
         $this->config = $this->container->get(ConfigInterface::class);
 
-        $this->namespaceId = $this->config->get("app.fengdangxing.nacos.namespaceId") ? $this->config->get("app.fengdangxing.nacos.namespaceId") : env('NAMESPACE_PREFIX', '');
+        $this->namespaceId = $this->config->get("app.fengdangxing.nacos.namespaceId", env('NAMESPACE_PREFIX', ''));
         if (empty($this->namespaceId)) {
             throw new \Exception("namespaceId empty");
         }
-        $this->isCache = $this->config->get("app.fengdangxing.nacos.cache") ? $this->config->get("app.fengdangxing.nacos.cache") : false;
-        $this->cacheRedisKey = $this->config->get("app.fengdangxing.nacos.cacheKey") ? $this->config->get("app.fengdangxing.nacos.cacheKey") : $this->cacheRedisKey;
+        $this->isCache = $this->config->get("app.fengdangxing.nacos.cache", false);
+        $this->cacheRedisKey = $this->config->get("app.fengdangxing.nacos.cacheKey", $this->cacheRedisKey);
+        $this->periodSeconds = $this->config->get("app.fengdangxing.nacos.periodSeconds", 60);
     }
 
     public function getOneNodeService($serviceName)
@@ -146,7 +148,7 @@ class OperateNacos
         if ($this->isCache) {
             $key = $this->getSigtermKey();
             RedisHelper::init()->set($key, 1);
-            RedisHelper::init()->expire($key, 360);
+            RedisHelper::init()->expire($key, $this->periodSeconds);
         }
     }
 

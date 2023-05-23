@@ -12,6 +12,7 @@ return [
                 'namespaceId' => 'ffffkk',//nacos 命名空间
                 'cache' => false,//是否启用redis 缓存节点
                 'cacheKey' => 'key:rpc_nodes_%s',//用redis 缓存节点 key值 
+                'periodSeconds' => 60,//容器缓冲时间(k8s默认30s)
             ]
         ]
 ];
@@ -43,7 +44,7 @@ sh WEB_PATH/del_nacos_service.sh 9501
 ```php
 #该脚本必须移动到 项目根目录 del_worker_process.sh
 //rabbitMq
-getContainer()->get(OperateNacos::class)->disposeSigterm('Consumer-');//消费者 demo-service.Consumer-demo.build.queue.0
+getContainer()->get(OperateNacos::class)->disposeSigterm($this->getQueue());//所有消费Consumer-或者队列名称 消费者 demo-service.Consumer-demo.build.queue.0
 //task
-getContainer()->get(OperateNacos::class)->disposeSigterm('crontab-dispatcher');//定时任务名称模糊匹配
+getContainer()->get(OperateNacos::class)->disposeSigterm('crontab-dispatcher');//所有定时任务或者定时任务名称 模糊匹配
 ```
