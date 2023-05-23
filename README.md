@@ -41,9 +41,9 @@ sh WEB_PATH/del_nacos_service.sh 9501
 
 #增加信号处理-防止后台进程任务继续执行操作（必须开启redis）
 ```php
+#该脚本必须移动到 项目根目录 del_worker_process.sh
 //rabbitMq
 getContainer()->get(OperateNacos::class)->disposeSigterm('Consumer-');//消费者 demo-service.Consumer-demo.build.queue.0
 //task
 getContainer()->get(OperateNacos::class)->disposeSigterm('crontab-dispatcher');//定时任务名称模糊匹配
 ```
-
