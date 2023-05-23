@@ -23,24 +23,36 @@ class OperateNacos
      */
     protected $ipReader;
 
+    /**
+     * @var Application
+     */
+    protected $client;
+
+    /**
+     * @var ConfigInterface
+     */
+    protected $config;
+
     public $cacheRedisKey = 'key:rpc_nodes_%s';
     public $namespaceId;
     public $isCache = false;
 
     public function __construct()
     {
-        $config = $this->container->get(ConfigInterface::class);
-        $this->namespaceId = $config->get("app.fengdangxing.nacos.namespaceId") ? $config->get("app.fengdangxing.nacos.namespaceId") : env('NAMESPACE_PREFIX', '');
+        $this->ipReader = $this->container->get(IPReaderInterface::class);
+        $this->client = $this->container->get(Application::class);
+        $this->config = $this->container->get(ConfigInterface::class);
+
+        $this->namespaceId = $this->config->get("app.fengdangxing.nacos.namespaceId") ? $this->config->get("app.fengdangxing.nacos.namespaceId") : env('NAMESPACE_PREFIX', '');
         if (empty($this->namespaceId)) {
             throw new \Exception("namespaceId empty");
         }
-        $this->isCache = $config->get("app.fengdangxing.nacos.cache") ? $config->get("app.fengdangxing.nacos.cache") : false;
-        $this->cacheRedisKey = $config->get("app.fengdangxing.nacos.cacheKey") ? $config->get("app.fengdangxing.nacos.cacheKey") : $this->cacheRedisKey;
+        $this->isCache = $this->config->get("app.fengdangxing.nacos.cache") ? $this->config->get("app.fengdangxing.nacos.cache") : false;
+        $this->cacheRedisKey = $this->config->get("app.fengdangxing.nacos.cacheKey") ? $this->config->get("app.fengdangxing.nacos.cacheKey") : $this->cacheRedisKey;
     }
 
     public function getOneNodeService($serviceName)
     {
-        $client = $this->container->get(Application::class);
         $ip = $this->ipReader->read();
         if ($this->isCache) {
             $key = sprintf($this->cacheRedisKey, md5((string)$serviceName . $this->namespaceId));
@@ -48,39 +60,45 @@ class OperateNacos
             echo '11';
             print_r($rpcNodes);
         }
-        $list = $this->getNodeServiceHostPort($client);
+        $list = $this->getNodeServiceHostPort();
         print_r($list);
         return 'http://' . $ip . ':/' . $serviceName . '/';
     }
 
     public function delServiceNacos()
     {
-        $config = $this->container->get(ConfigInterface::class);
-        $client = $this->container->get(Application::class);
-        $this->ipReader = $this->container->get(IPReaderInterface::class);
-
         //设置临时心跳为3600 为1小时
-        $config->set('services.drivers.nacos.heartbeat', 3600);
+        $this->config->set('services.drivers.nacos.heartbeat', 3600);
         $this->setSigterm();
         sleep(5);
-        $hostListPort = $this->getNodeServiceHostPort($client);
-        $this->delServiceName($client, $hostListPort);
+        $hostListPort = $this->getNodeServiceHostPort();
+        $this->delServiceName($hostListPort);
     }
 
-    public function setCache()
+    public function disposeSigterm($wokerName): bool
+    {
+        if (RedisHelper::init()->get($this->getSigtermKey())) {
+            system('sh ' . BASE_PATH . "/del_worker_process.sh " . env('APP_NAME') . '.Manager');
+            system('sh ' . BASE_PATH . "/del_worker_process.sh $wokerName");
+            return true;
+        }
+        return false;
+    }
+
+    public function setCache(): int
     {
 
     }
 
-    private function getNodeServiceHostPort(Application $client): array
+    private function getNodeServiceHostPort(): array
     {
         $hostListPort = [];
         //获取所有服务
-        $listAll = $client->service->list(1, 1000, '', env('NAMESPACE_PREFIX', ''));
+        $listAll = $this->client->service->list(1, 1000, '', env('NAMESPACE_PREFIX', ''));
         $list = Json::decode($listAll->getBody()->getContents());
         foreach ($list['doms'] as $serviceName) {
             //获取单服务详情
-            $infoJson = $client->instance->list($serviceName, ['namespaceId' => env('NAMESPACE_PREFIX', '')]);
+            $infoJson = $this->client->instance->list($serviceName, ['namespaceId' => env('NAMESPACE_PREFIX', '')]);
             $info = Json::decode($infoJson->getBody()->getContents());
             //获取服务节点列表
             $hosts = $info['hosts'];
@@ -93,7 +111,7 @@ class OperateNacos
         return $hostListPort;
     }
 
-    private function delServiceName(Application $client, $hostListPort)
+    private function delServiceName($hostListPort)
     {
         if (empty($hostListPort)) {
             return;
@@ -105,7 +123,7 @@ class OperateNacos
         $ipPort = $ip;
         $services = $hostListPort[$ip];
         foreach ($services as $key => $service) {
-            $response = $client->instance->delete((string)$service[0], $groupName, $ip, (int)$service[1], [
+            $response = $this->client->instance->delete((string)$service[0], $groupName, $ip, (int)$service[1], [
                 'clusterName' => $cluster,
                 'namespaceId' => $this->namespaceId,
                 'ephemeral' => $ephemeral,
@@ -126,10 +144,16 @@ class OperateNacos
     private function setSigterm()
     {
         if ($this->isCache) {
-            $ip = $this->ipReader->read();
-            $key = sprintf($this->cacheRedisKey, md5($ip));
+            $key = $this->getSigtermKey();
             RedisHelper::init()->set($key, 1);
             RedisHelper::init()->expire($key, 360);
         }
+    }
+
+    private function getSigtermKey(): string
+    {
+        $ip = $this->ipReader->read();
+        $key = sprintf($this->cacheRedisKey, md5($ip));
+        return $key;
     }
 }
