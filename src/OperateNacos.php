@@ -45,8 +45,12 @@ class OperateNacos
         if ($this->isCache) {
             $key = sprintf($this->cacheRedisKey, md5((string)$serviceName . $this->namespaceId));
             $rpcNodes = RedisHelper::init()->get($key);
+            echo '11';
+            print_r($rpcNodes);
         }
-        return 'http://' . $ip . ':' . $this->rpcPort . '/' . $serviceName . '/';
+        $list = $this->getNodeServiceHostPort($client);
+        print_r($list);
+        return 'http://' . $ip . ':/' . $serviceName . '/';
     }
 
     public function delServiceNacos()
@@ -57,6 +61,7 @@ class OperateNacos
 
         //设置临时心跳为3600 为1小时
         $config->set('services.drivers.nacos.heartbeat', 3600);
+        $this->setSigterm();
         sleep(5);
         $hostListPort = $this->getNodeServiceHostPort($client);
         $this->delServiceName($client, $hostListPort);
@@ -116,5 +121,15 @@ class OperateNacos
             RedisHelper::init()->del($key);
         }
         return true;
+    }
+
+    private function setSigterm()
+    {
+        if ($this->isCache) {
+            $ip = $this->ipReader->read();
+            $key = sprintf($this->cacheRedisKey, md5($ip));
+            RedisHelper::init()->set($key, 1);
+            RedisHelper::init()->expire($key, 360);
+        }
     }
 }
