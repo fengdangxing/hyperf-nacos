@@ -10,7 +10,7 @@ return [
     'fengdangxing' => [
             'nacos' => [
                 'namespaceId' => 'ffffkk',//nacos 命名空间
-                'cache' => false,//是否启用redis 缓存节点
+                'cache' => true,//是否启用redis 缓存节点
                 'cacheKey' => 'key:rpc_nodes_%s',//用redis 缓存节点 key值 
                 'periodSeconds' => 60,//容器缓冲时间(k8s默认30s)
             ]
@@ -38,6 +38,13 @@ return [
 sh WEB_PATH/vendor/fengdangxing/hyperf-nacos/del_nacos_service.sh 9501
 或者把脚本复制到根目录
 sh WEB_PATH/del_nacos_service.sh 9501
+```
+
+#如果不是nacos注册的微服务-需要直接使用信号
+```bash
+sh WEB_PATH/vendor/fengdangxing/hyperf-nacos/set_sigterm.sh 9501
+或者把脚本复制到根目录
+sh WEB_PATH/set_sigterm.sh 9501
 ```
 
 #增加信号处理-防止后台进程任务继续执行操作（必须开启redis）

@@ -28,9 +28,23 @@ class PoloNacosController
      */
     public $container;
 
+    /**
+     * @Notes: 操作直接删除nacos节点
+     * @return void
+     */
     public function del()
     {
         $nacos = $this->container->get(OperateNacos::class);
         $nacos->delServiceNacos();
+    }
+
+    /**
+     * @Notes: 直接设置信号
+     * @return void
+     */
+    public function setSigterm()
+    {
+        $nacos = $this->container->get(OperateNacos::class);
+        $nacos->setSigterm();
     }
 }

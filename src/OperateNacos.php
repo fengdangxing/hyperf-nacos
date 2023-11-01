@@ -59,11 +59,8 @@ class OperateNacos
         if ($this->isCache) {
             $key = sprintf($this->cacheRedisKey, md5((string)$serviceName . $this->namespaceId));
             $rpcNodes = RedisHelper::init()->get($key);
-            echo '11';
-            print_r($rpcNodes);
         }
         $list = $this->getNodeServiceHostPort();
-        print_r($list);
         return 'http://' . $ip . ':/' . $serviceName . '/';
     }
 
@@ -143,7 +140,7 @@ class OperateNacos
         return true;
     }
 
-    private function setSigterm()
+    public function setSigterm()
     {
         if ($this->isCache) {
             $key = $this->getSigtermKey();
