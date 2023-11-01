@@ -14,6 +14,7 @@ return [
                 'cacheKey' => 'key:rpc_nodes_%s',//用redis 缓存节点 key值 
                 'hashKey' => 'TqGvAmpbJX6XttMsFJrDw7F',//增加密钥值
                 'periodSeconds' => 60,//容器缓冲时间(k8s默认30s)
+                'preStopSleep' => 60,//容器摧毁前增加时间默认30s+preStopSleep  容器将会等待30+preStopSleep 的时候后真实摧毁pod
             ]
         ]
 ];

@@ -38,6 +38,7 @@ class OperateNacos
     public $isCache = false;
     public $hashKey = '';
     public $periodSeconds = 60;
+    public $preStopSleep = 0;
 
     public function __construct()
     {
@@ -53,6 +54,7 @@ class OperateNacos
         $this->hashKey = $this->config->get("app.fengdangxing.nacos.hashKey", '');
         $this->cacheRedisKey = $this->config->get("app.fengdangxing.nacos.cacheKey", $this->cacheRedisKey);
         $this->periodSeconds = $this->config->get("app.fengdangxing.nacos.periodSeconds", 60);
+        $this->preStopSleep = $this->config->get("app.fengdangxing.nacos.preStopSleep", 0);
     }
 
     public function getOneNodeService($serviceName)
@@ -148,6 +150,9 @@ class OperateNacos
             $key = $this->getSigtermKey();
             RedisHelper::init()->set($key, 1);
             RedisHelper::init()->expire($key, $this->periodSeconds);
+            if ($this->preStopSleep) {
+                sleep($this->preStopSleep);
+            }
         }
     }
 
