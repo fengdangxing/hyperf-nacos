@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Fengdangxing\HyperfNacos\Controller;
 
 use Fengdangxing\HyperfNacos\OperateNacos;
+use Hyperf\HttpServer\Contract\RequestInterface;
 use Psr\Container\ContainerInterface;
 use Hyperf\Di\Annotation\Inject;
 use Hyperf\HttpServer\Annotation\AutoController;
@@ -27,6 +28,12 @@ class PoloNacosController
      * @var ContainerInterface
      */
     public $container;
+
+    /**
+     * @Inject
+     * @var RequestInterface
+     */
+    protected $request;
 
     /**
      * @Notes: 操作直接删除nacos节点
@@ -44,7 +51,8 @@ class PoloNacosController
      */
     public function setSigterm()
     {
+        $hashKey = $this->request->input('key', '');
         $nacos = $this->container->get(OperateNacos::class);
-        $nacos->setSigterm();
+        $nacos->setSigterm($hashKey);
     }
 }
