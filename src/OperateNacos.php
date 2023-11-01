@@ -36,6 +36,7 @@ class OperateNacos
     public $cacheRedisKey = 'key:rpc_nodes_%s';
     public $namespaceId;
     public $isCache = false;
+    public $hashKey = '';
     public $periodSeconds = 60;
 
     public function __construct()
@@ -49,6 +50,7 @@ class OperateNacos
             throw new \Exception("namespaceId empty");
         }
         $this->isCache = $this->config->get("app.fengdangxing.nacos.cache", false);
+        $this->hashKey = $this->config->get("app.fengdangxing.nacos.hashKey", '');
         $this->cacheRedisKey = $this->config->get("app.fengdangxing.nacos.cacheKey", $this->cacheRedisKey);
         $this->periodSeconds = $this->config->get("app.fengdangxing.nacos.periodSeconds", 60);
     }
@@ -68,7 +70,7 @@ class OperateNacos
     {
         //设置临时心跳为3600 为1小时
         $this->config->set('services.drivers.nacos.heartbeat', 3600);
-        $this->setSigterm();
+        $this->setSigterm($this->hashKey);
         sleep(5);
         $hostListPort = $this->getNodeServiceHostPort();
         $this->delServiceName($hostListPort);
@@ -140,9 +142,9 @@ class OperateNacos
         return true;
     }
 
-    public function setSigterm()
+    public function setSigterm($hashKey)
     {
-        if ($this->isCache) {
+        if ($this->isCache && $hashKey == $this->hashKey) {
             $key = $this->getSigtermKey();
             RedisHelper::init()->set($key, 1);
             RedisHelper::init()->expire($key, $this->periodSeconds);
